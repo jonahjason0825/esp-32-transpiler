@@ -1,0 +1,4 @@
+setPin 18 HIGH
+setPin 22 LOW
+setPin 10 HIGH
+setPin 12 HIGH
