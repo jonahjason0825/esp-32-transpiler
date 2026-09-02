@@ -3,3 +3,5 @@ holdFor 100
 setPin 12 LOW
 holdFor 100
 getTime
+blinkBuiltIn
+returnAvailableDRAM

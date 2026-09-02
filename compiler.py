@@ -24,6 +24,12 @@ class ESPTranspiler(Transformer):
         ),
         "holdFor": lambda ms: f"vTaskDelay(pdMS_TO_TICKS({ms}));",
         "getTime": lambda: "printf(\"Current time: %ld\\n\", esp_timer_get_time());",
+        "blinkBuiltIn": lambda: (
+                    f"gpio_reset_pin(12);"
+                    f"gpio_set_direction(12, GPIO_MODE_OUTPUT);"
+                    f"gpio_set_level(12, 1);"
+                ),
+        "returnAvailableDRAM": lambda: "printf(\"Available DRAM: %d bytes\\n\", esp_get_free_heap_size());"
 
     }
 
