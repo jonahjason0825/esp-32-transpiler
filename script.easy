@@ -6,3 +6,4 @@ getTime
 blinkBuiltIn
 returnAvailableDRAM
 readPin 12
+resetChip

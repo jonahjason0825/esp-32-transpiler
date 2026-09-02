@@ -30,7 +30,8 @@ class ESPTranspiler(Transformer):
                     f"gpio_set_direction(12, GPIO_MODE_OUTPUT);"
                     f"gpio_set_level(12, 1);"
                 ),
-        "returnAvailableDRAM": lambda: "printf(\"Available DRAM: %d bytes\\n\", esp_get_free_heap_size());"
+        "returnAvailableDRAM": lambda: "printf(\"Available DRAM: %d bytes\\n\", esp_get_free_heap_size());",
+        "resetChip": lambda: "esp_restart();",
 
     }
 
