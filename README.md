@@ -10,32 +10,38 @@ The output ESP-IDF code is saved to main/main.c. You may copy-paste the generate
 Please exclusively use the below-mentioned syntax AS-IS. Do not change spellings or case. 
 
 Syntax:
-1. setPin pin_number: setting a pin to HIGH or LOW state. 
+1. setPin pin_number: setting a pin to HIGH or LOW state.
+2. 
 ESP-IDF syntax: 
 	gpio_reset_pin({pin_number}); 
     gpio_set_direction({pin_number}, GPIO_MODE_OUTPUT); 
     gpio_set_level({pin_number}, {1 if pin_state in ('HIGH', '1') else 0});
 	
-2. readPin pin_number: performs digital read on a pin
+3. readPin pin_number: performs digital read on a pin
+   
 ESP-IDF syntax:
 	gpio_get_level({pin_number});
 
-3. holdFor: delay function
+4. holdFor: delay function
 ESP-IDF syntax: vTaskDelay(pdMS_TO_TICKS({ms}));
 
-4. getTime: retrieves the time elapsed since ESP32 was booted. 
+
+5. getTime: retrieves the time elapsed since ESP32 was booted. 
 ESP-IDF syntax: esp_timer_get_time()
 
-5. blinkBuiltIn: blinks the built-in LED on the ESP32, which is generally controlled by GPIO12
+
+6. blinkBuiltIn: blinks the built-in LED on the ESP32, which is generally controlled by GPIO12
 ESP-IDF syntax: 
 	gpio_reset_pin(12);"
     gpio_set_direction(12, GPIO_MODE_OUTPUT);
     gpio_set_level(12, 1);
 
-6. returnAvailableDRAM: retrieves the amount of DRAM available in ESP32
+
+7. returnAvailableDRAM: retrieves the amount of DRAM available in ESP32
 ESP-IDF syntax:
 	printf(\"Available DRAM: %d bytes\\n\", esp_get_free_heap_size());
 
-7. resetChip: performs a software reset on ESP32
+
+8. resetChip: performs a software reset on ESP32
 ESP-IDF syntax:
 	esp_restart();
