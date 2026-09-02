@@ -22,6 +22,7 @@ class ESPTranspiler(Transformer):
             f"gpio_set_direction({pin_number}, GPIO_MODE_OUTPUT); "
             f"gpio_set_level({pin_number}, {1 if pin_state in ('HIGH', '1') else 0});"
         ),
+        "readPin": lambda pin_number: (f"gpio_get_level({pin_number}); "),
         "holdFor": lambda ms: f"vTaskDelay(pdMS_TO_TICKS({ms}));",
         "getTime": lambda: "printf(\"Current time: %ld\\n\", esp_timer_get_time());",
         "blinkBuiltIn": lambda: (

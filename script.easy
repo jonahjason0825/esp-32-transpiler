@@ -5,3 +5,4 @@ holdFor 100
 getTime
 blinkBuiltIn
 returnAvailableDRAM
+readPin 12

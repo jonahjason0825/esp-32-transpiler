@@ -14,6 +14,7 @@ void app_main(void)
     printf("Current time: %ld\n", esp_timer_get_time());
     gpio_reset_pin(12);gpio_set_direction(12, GPIO_MODE_OUTPUT);gpio_set_level(12, 1);
     printf("Available DRAM: %d bytes\n", esp_get_free_heap_size());
+    gpio_get_level(12); 
 
     while (1){
         vTaskDelay(pdMS_TO_TICKS(1000));
