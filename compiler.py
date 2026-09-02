@@ -1,38 +1,78 @@
 import os
-from lark import Lark, Transformer, v_args
-grammar = """
-    start: command+
-    command: "setPin" INT STATE
-    STATE: "HIGH" | "LOW"
-    %import common.WS
-    %import common.INT
-    %ignore WS
-"""
-#now creates an array items. items[0] stores the pin number and items[1] 
-# stores the state of the pin 
-#if items[1] is HIGH then the pin is set to HIGH and if items[1] is LOW 
-# then the pin is set to LOW
-class ESPTranspiler(Transformer): 
-    def command (self, items):
-        pin_number = int(items[0])
-        state = 1 if items[1] == "HIGH" else 0
-        return f"gpio_set_direction({pin_number}, OUTPUT);gpio_set_level({pin_number}, {state});"
-    def start (self, items): #combines all the individual C statements produced by command rules 
-    #into a single, cleanly formatted text block.
-        return "\n    ".join(items)
+from lark import Lark, Transformer
 
-parser=Lark(grammar, start='start')
-#read the input DSL (domain specific language) file 
+grammar = """
+    start: statement (_SEP+ statement)* _SEP*
+    statement: command_statement | repeat_statement
+    command_statement: IDENTIFIER param*
+    repeat_statement: "REPEAT" INT "DO" statement+ "END"
+    param: INT | STRING | IDENTIFIER
+    IDENTIFIER: /[a-zA-Z_][a-zA-Z0-9_]*/
+    _SEP: /\\n+/
+    %import common.ESCAPED_STRING -> STRING
+    %import common.INT
+    %ignore /[ \\t]/
+"""
+
+class ESPTranspiler(Transformer): 
+    # Lookup table mapping DSL actions to ESP-IDF driver macros
+    command_map = {
+        "setPin": lambda pin_number, pin_state: (
+            f"gpio_reset_pin({pin_number}); "
+            f"gpio_set_direction({pin_number}, GPIO_MODE_OUTPUT); "
+            f"gpio_set_level({pin_number}, {1 if pin_state in ('HIGH', '1') else 0});"
+        ),
+        "holdFor": lambda ms: f"vTaskDelay(pdMS_TO_TICKS({ms}));",
+        "getTime": lambda: "printf(\"Current time: %ld\\n\", esp_timer_get_time());",
+
+    }
+
+    def start(self, items):
+        return "\n    ".join(str(item) for item in items)
+
+    def statement(self, items):
+        return items[0]
+
+    def param(self, items):
+        token = items[0]
+        # Return the integer value for INT, string value for others
+        return int(token.value) if token.type == 'INT' else token.value
+
+    # Method name matches grammar rule 'command_statement'
+    def command_statement(self, items):
+        cmd_name = items[0].value
+        args = items[1:]
+        
+        # Access class attribute via self.command_map
+        if cmd_name in self.command_map:
+            return self.command_map[cmd_name](*args)
+        else:
+            raise SyntaxError(f"Unknown hardware command: {cmd_name}")
+
+    # Method name matches grammar rule 'repeat_statement'
+    def repeat_statement(self, items):
+        count = items[0]
+        inner_body = "\n        ".join(str(item) for item in items[1:])
+        return f"for (int i = 0; i < {count}; i++) {{\n        {inner_body}\n    }}"
+
+
+parser = Lark(grammar, start='start')
+
+# 1. Read input DSL file
 with open("script.easy", "r") as f:
     dsl_code = f.read()
-parseTree=parser.parse(dsl_code)
-transpiler=ESPTranspiler()
-generatedProg=transpiler.transform(parseTree)
 
-with open ("template.c", "r") as f:
+parseTree = parser.parse(dsl_code)
+transpiler = ESPTranspiler()
+generatedProg = transpiler.transform(parseTree)
+
+# 2. Inject output into C skeleton
+with open("template.c", "r") as f:
     template_code = f.read()
-outputCode=template_code.replace("//Code_generation_section", generatedProg)
-#now save to the correct branch: main/main.c
+
+outputCode = template_code.replace("//Code_generation_section", generatedProg)
+
+# 3. Save build output to main/main.c
 os.makedirs("main", exist_ok=True)
 with open("main/main.c", "w") as f:
     f.write(outputCode)

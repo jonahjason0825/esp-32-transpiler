@@ -1,4 +1,5 @@
-setPin 18 HIGH
-setPin 22 LOW
-setPin 10 HIGH
 setPin 12 HIGH
+holdFor 100
+setPin 12 LOW
+holdFor 100
+getTime
